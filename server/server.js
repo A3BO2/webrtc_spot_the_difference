@@ -72,10 +72,10 @@ function endRound(roomId, reason) {
   clearTimeout(room.timer);
 }
 
-io.on("connection", (sock) => {
-  console.log(`[CONNECT] ${sock.id}`);
+io.on("connection", (socket) => {
+  console.log(`[CONNECT] ${socket.id}`);
 
-  sock.on("join", ({ roomId, name }) => {
+  socket.on("join", ({ roomId, name }) => {
     if (!rooms.has(roomId)) {
       rooms.set(roomId, {
         players: new Set(),
@@ -89,30 +89,30 @@ io.on("connection", (sock) => {
     }
     const room = rooms.get(roomId);
 
-    if (!room.players.has(sock.id)) {
-      room.players.add(sock.id);
-      room.names.set(sock.id, name || "Player");
-      sock.join(roomId);
-      if (!room.scores.has(sock.id)) room.scores.set(sock.id, 0);
+    if (!room.players.has(socket.id)) {
+      room.players.add(socket.id);
+      room.names.set(socket.id, name || "Player");
+      socket.join(roomId);
+      if (!room.scores.has(socket.id)) room.scores.set(socket.id, 0);
     }
 
     const roster = rosterObj(room);
 
-    sock.emit("joined", { roomId, you: sock.id, roster });
-    sock.to(roomId).emit("peer-joined", { peer: sock.id, roster });
+    socket.emit("joined", { roomId, you: socket.id, roster });
+    socket.to(roomId).emit("peer-joined", { peer: socket.id, roster });
 
     console.log(`[JOIN] ${name} -> ${roomId}`);
   });
 
   // 메시지 배달
-  sock.on("signal", ({ to, data }) => {
-    io.to(to).emit("signal", { from: sock.id, data });
+  socket.on("signal", ({ to, data }) => {
+    io.to(to).emit("signal", { from: socket.id, data });
   });
 
-  sock.on("ready", ({ roomId }) => {
+  socket.on("ready", ({ roomId }) => {
     const room = rooms.get(roomId);
     if (!room) return;
-    room.ready.add(sock.id);
+    room.ready.add(socket.id);
 
     if (room.ready.size >= 2 && !room.started) {
       room.started = true;
@@ -143,7 +143,7 @@ io.on("connection", (sock) => {
     }
   });
 
-  sock.on("claim", ({ roomId, spotId }) => {
+  socket.on("claim", ({ roomId, spotId }) => {
     if (!spotId) return;
 
     const room = rooms.get(roomId);
@@ -156,10 +156,10 @@ io.on("connection", (sock) => {
     if (room.locked.has(spotId)) return;
 
     room.locked.add(spotId);
-    const oldScore = room.scores.get(sock.id) || 0;
-    room.scores.set(sock.id, oldScore + 1);
+    const oldScore = room.scores.get(socket.id) || 0;
+    room.scores.set(socket.id, oldScore + 1);
 
-    console.log(`[HIT] ${sock.id} found ${spotId}`);
+    console.log(`[HIT] ${socket.id} found ${spotId}`);
 
     io.to(roomId).emit("lock", {
       spotId,
@@ -171,15 +171,15 @@ io.on("connection", (sock) => {
     }
   });
 
-  sock.on("disconnect", () => {
+  socket.on("disconnect", () => {
     for (const [rid, r] of rooms) {
-      if (r.players.has(sock.id)) {
-        r.players.delete(sock.id);
-        r.ready.delete(sock.id);
-        r.names.delete(sock.id);
+      if (r.players.has(socket.id)) {
+        r.players.delete(socket.id);
+        r.ready.delete(socket.id);
+        r.names.delete(socket.id);
 
         const roster = rosterObj(r);
-        sock.to(rid).emit("peer-left", { peerId: sock.id, roster });
+        socket.to(rid).emit("peer-left", { peerId: socket.id, roster });
       }
     }
   });

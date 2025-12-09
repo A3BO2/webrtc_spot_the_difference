@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ImageCanvas from "./ImageCanvas";
-import { sock, sendReady, claimSpot } from "../lib/socket";
+import { socket, sendReady, claimSpot } from "../lib/socket";
 import { onRT, sendRT } from "../lib/rtc";
 
 export default function SpotGame() {
@@ -36,13 +36,13 @@ export default function SpotGame() {
     const handleRoster = (data) => {
       if (data.roster && data.roster.players) setPlayers(data.roster.players);
     };
-    sock.on("joined", handleRoster);
-    sock.on("peer-joined", handleRoster);
-    sock.on("peer-left", handleRoster);
+    socket.on("joined", handleRoster);
+    socket.on("peer-joined", handleRoster);
+    socket.on("peer-left", handleRoster);
     return () => {
-      sock.off("joined", handleRoster);
-      sock.off("peer-joined", handleRoster);
-      sock.off("peer-left", handleRoster);
+      socket.off("joined", handleRoster);
+      socket.off("peer-joined", handleRoster);
+      socket.off("peer-left", handleRoster);
     };
   }, []);
 
@@ -82,8 +82,8 @@ export default function SpotGame() {
       t = setInterval(tick, 200);
     };
 
-    sock.on("start", onStart);
-    return () => sock.off("start", onStart);
+    socket.on("start", onStart);
+    return () => socket.off("start", onStart);
   }, []);
 
   useEffect(() => {
@@ -97,8 +97,8 @@ export default function SpotGame() {
         return next;
       });
     };
-    sock.on("lock", onLock);
-    return () => sock.off("lock", onLock);
+    socket.on("lock", onLock);
+    return () => socket.off("lock", onLock);
   }, []);
 
   useEffect(() => {
@@ -107,8 +107,8 @@ export default function SpotGame() {
       setPhase("idle");
       setEndsAt(null);
     };
-    sock.on("round-over", onOver);
-    return () => sock.off("round-over", onOver);
+    socket.on("round-over", onOver);
+    return () => socket.off("round-over", onOver);
   }, []);
 
   // WebRTC 수신부: 오답일 경우 상대 화면에서도 2초 뒤 삭제
@@ -182,7 +182,7 @@ export default function SpotGame() {
     }
   };
 
-  const myId = sock.id;
+  const myId = socket.id;
   const myScore = scores && myId ? scores[myId] || 0 : 0;
   const total = spots.length;
 
