@@ -158,6 +158,82 @@ http://localhost:5173
 
 ---
 
+# 🌐 Cloudflare Tunnel을 이용한 외부 접속 배포 (Development Sharing)
+
+Cloudflare Tunnel을 사용하면 로컬에서 개발 중인 서버를 간단하게 외부에서 접속 가능하게 만들 수 있습니다.  
+테스터나 친구에게 실제 게임 링크를 보내 바로 플레이시킬 수 있습니다.
+
+> ⚠️ Cloudflare Tunnel은 무료이며,  
+> **사용자가 자신의 Cloudflare 계정에서 직접 실행해야 정상 동작**합니다.  
+> 아래 주소들은 예시이며 실제 환경에서는 고유 주소가 생성됩니다.
+
+---
+
+## 🔧 1단계: 서버(Backend) 외부 공개
+
+```bash
+cloudflared tunnel --url http://localhost:3001
+```
+
+출력 예시:
+
+```
+https://aaaa-bbbb.trycloudflare.com
+```
+
+➡ 이 주소가 **외부용 백엔드 URL**입니다.
+
+---
+
+## 📝 2단계: 프론트엔드 환경 변수 수정
+
+`client/.env.development` 또는 `.env`를 다음처럼 변경:
+
+```env
+# 기존
+# VITE_BACKEND_URL=http://localhost:3001
+
+# Cloudflare Backend URL로 변경
+VITE_BACKEND_URL=https://aaaa-bbbb.trycloudflare.com
+```
+
+수정 후 dev 서버 재시작:
+
+```bash
+npm run dev
+```
+
+---
+
+## 🌐 3단계: 프론트엔드(Frontend) 외부 공개
+
+```bash
+cloudflared tunnel --url http://localhost:5173
+```
+
+출력 예시:
+
+```
+https://cccc-dddd.trycloudflare.com
+```
+
+➡ 이것이 **실제 친구에게 보내줄 접속 링크**입니다.
+
+---
+
+## 🚀 최종 요약
+
+| 실행 위치          | 역할                                                                |
+| ------------------ | ------------------------------------------------------------------- |
+| **CMD 창 1**       | `cloudflared tunnel --url http://localhost:3001` (서버 외부 공유)   |
+| **CMD 창 2**       | `cloudflared tunnel --url http://localhost:5173` (프론트 외부 공유) |
+| **VS Code 터미널** | `npm run dev` (React 개발 서버)                                     |
+| **외부 접속 주소** | → `https://cccc-dddd.trycloudflare.com`                             |
+
+---
+
 ## 📄 License
 
 MIT License
+
+---
