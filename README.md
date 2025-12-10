@@ -2,8 +2,7 @@
 
 ### WebRTC & Socket.IO 기반 실시간 틀린그림찾기 게임
 
-> **서버의 신뢰성(Reliability)** + **P2P 초저지연(Low Latency)**  
-> 두 가지 장점을 결합한 **하이브리드 실시간 협동 웹 게임**
+> **P2P 초저지연(Low Latency)** 장점의 **실시간 웹 게임**
 
 ---
 
@@ -15,6 +14,12 @@
 - WebRTC Data Channel → **0ms에 가까운 즉각적인 클릭 공유**
 - Socket.IO → **검증 · 점수 · 게임 상태 관리**
 - 완벽한 동기화 & 보안성 확보
+
+---
+
+## 시연 영상
+
+![demo-gif](https://github.com/user-attachments/assets/fd48b3dc-3851-4e17-844d-ec2992e21fda)
 
 ---
 
