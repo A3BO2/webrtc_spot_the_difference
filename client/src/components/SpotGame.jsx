@@ -107,6 +107,7 @@ export default function SpotGame() {
       setPhase("idle");
       setEndsAt(null);
     };
+
     socket.on("round-over", onOver);
     return () => socket.off("round-over", onOver);
   }, []);
@@ -189,8 +190,11 @@ export default function SpotGame() {
   let resultMessage = "";
   let resultColor = "#fff";
   if (result) {
-    const amIWinner = result.winners.includes(myId);
-    const isDraw = result.winners.length > 1;
+    const winners = result.winners || [];
+    const amIWinner = winners.includes(myId);
+
+    // 승자 목록에 내가 있고, 승자가 1명보다 많으면 무승부
+    const isDraw = winners.length > 1 && amIWinner;
 
     if (isDraw && amIWinner) {
       resultMessage = "무승부 🤝";

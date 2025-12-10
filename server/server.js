@@ -58,18 +58,33 @@ function rosterObj(room) {
   return { players };
 }
 
-function endRound(roomId, reason) {
+function winnersFrom(scoresObj) {
+  const vals = Object.values(scoresObj);
+  if (!vals.length) return [];
+
+  // 가장 높은 점수 찾기
+  const top = Math.max(...vals);
+
+  // 가장 높은 점수와 일치하는 모든 플레이어 ID 반환 (동점 처리)
+  return Object.keys(scoresObj).filter((id) => scoresObj[id] === top);
+}
+
+function endRound(roomId, reason = "timeout") {
   const room = rooms.get(roomId);
   if (!room || !room.started) return;
   const scores = Object.fromEntries(room.scores);
   io.to(roomId).emit("round-over", {
     roomId,
     scores,
-    winners: [],
+    winners: winnersFrom(scores),
     reason,
+    endedAt: Date.now(),
   });
   room.started = false;
   clearTimeout(room.timer);
+  room.timer = null;
+  room.ready.clear();
+  room.started = false;
 }
 
 io.on("connection", (socket) => {
